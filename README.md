@@ -14,14 +14,14 @@ Sistem ini dirancang untuk memberikan kemudahan kepada para pecinta mini soccer 
 - **Storage**: Google Cloud Storage
 
 ## Flow Aplikasi
--**1. Admin → Login**
--**2. Admin → Manage Field**
--**3. Admin → Manage Field Schedule**
--**4. Customer → Register**
--**5. Customer → Login**
--**6. Customer → Create Order**
--**7. Customer → Pay Order**
--**8. Done**
+- **1. Admin → Login**
+- **2. Admin → Manage Field**
+- **3. Admin → Manage Field Schedule**
+- **4. Customer → Register**
+- **5. Customer → Login**
+- **6. Customer → Create Order**
+- **7. Customer → Pay Order**
+- **8. Done**
 
 
 ### Persiapan 

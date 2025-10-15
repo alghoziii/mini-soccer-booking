@@ -1,54 +1,28 @@
 # Booking Lapangan Mini Soccer!⚽
+## Goal? 
+Sistem ini dirancang untuk memberikan kemudahan kepada para pecinta mini soccer dalam membooking lapangan mini soccer secara online dengan mudah. Dengan menggunakan sistem ini, semua proses mulai dari pemesanan hingga pembayaran dapat dilakukan melalui sistem ini.
 
-## Apaan sih ini? 🤔
+## Teknologi 🚀
 
-Yok kenalan! Ini adalah sistem booking lapangan bola super kece yang dibangun pake teknologi canggih. Gak cuma sekedar booking, tapi serba digital abis!
-
-## Teknologi Kece Bro! 🚀
-
-- **Bahasa Coding**: Golang (Mantul!)
-- **Frontend**: Next.js
-- **Arsitektur**: Microservice (Biar keren)
-- **Messaging**: Apache Kafka
-- **Packaging**: Docker
-- **Deploy**: Jenkins
-- **Cloud**: Google Cloud Platform
-- **Nyimpen File**: Google Cloud Storage
+- **Programming Language**: Golang
+- **Arsitektur**: Microservice
+- **Framework**: Gin & Gorm
 - **Database**: PostgreSQL
-- **Service Discovery**: Consul KV
+- **Message Broker**: Apache Kafka
+- **Containerization**: Docker
+- **Cloud**: Google Cloud Platform
+- **Storage**: Google Cloud Storage
 
-## Fitur Keren Banget! ✨
+## Flow Aplikasi
+-1. Admin → Login
+-2. Admin → Manage Field
+-3. Admin → Manage Field Schedule
+-4. Customer → Register
+-5. Customer → Login
+-6. Customer → Create Order
+-7. Customer → Pay Order
+-8. Done
 
-### Backend Jagoan
-- Booking lapangan? Tinggal klik!
-- Chat antar service real-time
-- Atur lapangan sejagat raya
-- Login super aman
-- Transaksi nyaris tidak mungkin error
-
-### Microservice Kece
-- Service terpisah buat:
-  - Ngatur User
-  - Booking Lapangan
-  - Urusan Duit
-  - Kirim Notifikasi
-- Komunikasi pake Kafka
-- Bisa ngehandle jutaan user!
-
-## Belajar Apa Aja Sih? 🎓
-
-1. Microservice itu apaan?
-2. Golang dari 0 sampai jago
-3. Main-main sama cloud
-4. Bikin backend kece abis!
-
-## Ini Buat Siapa Aja? 👥
-
-- Pemula yang pengen jadi jagoan backend
-- Backend developer pengen upgrade skill
-- Fullstack yang pengen belajar hal baru
-
-## Mulai Ngoding Yuk! 💻
 
 ### Persiapan 
 - Golang 1.20+
@@ -60,11 +34,11 @@ Yok kenalan! Ini adalah sistem booking lapangan bola super kece yang dibangun pa
 ### Install Kilat!
 
 ```bash
-# Copot repository
-https://github.com/bintangnugrahaa/soccer-booking-field
+# Copy repository
+https://github.com/alghoziii/mini-soccer-booking
 
 # Masuk folder
-cd soccer-booking-field
+cd mini-soccer-booking
 
 # Jalankan Docker
 docker-compose up -d
@@ -89,12 +63,5 @@ booking-lapangan-bola/
 └── share/                  # Kode Umum
 ```
 
-## Wajib Setting! 🔧
-
-Salin `.env.example` terus diubah:
-- Login GCP
-- Koneksi Database
-- Setting Kafka
-- Pengamanan
-
-**Selamat Ngoding, Semoga Jadi Developer Kece! 💻🔥**
+Documentation : https://wobbly-typhoon-983.notion.site/Konsep-Sistem-Booking-Lapangan-Mini-Soccer-Backend-Golang-Microservice-145e3a9651db8093a32fd571e0022670
+https://wobbly-typhoon-983.notion.site/Konsep-Sistem-Booking-Lapangan-Mini-Soccer-Backend-Golang-Microservice-145e3a9651db8093a32fd571e0022670

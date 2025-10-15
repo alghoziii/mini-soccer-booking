@@ -55,13 +55,16 @@ make run
 ```
 booking-lapangan-bola/
 │
-├── service-user/           # Ngurusin User
-├── service-booking/        # Booking Lapangan
-├── service-pembayaran/     # Urus Duit
-├── service-notifikasi/     # Kirim Pesan
-├── api-gateway/            # Pintu Masuk
-└── share/                  # Kode Umum
+├── user-service/           
+├── field-service/        
+├── order-service/     
+├── payment-service/
 ```
+
+- **User service adalah service untuk mengelola data user baik admin ataupun customer.**
+- **Field service adalah service untuk mengelola data lapangan dan juga jadwal lapangan yang tersedia.**
+- **Order service adalah service untuk mengelola data order atau booking yang akan/telah diorder oleh customer**
+- **Payment service adalah service untuk mengelola data pembayaran dari customer yang telah membooking lapangan.**
 
 Documentation : https://wobbly-typhoon-983.notion.site/Konsep-Sistem-Booking-Lapangan-Mini-Soccer-Backend-Golang-Microservice-145e3a9651db8093a32fd571e0022670
 https://wobbly-typhoon-983.notion.site/Konsep-Sistem-Booking-Lapangan-Mini-Soccer-Backend-Golang-Microservice-145e3a9651db8093a32fd571e0022670

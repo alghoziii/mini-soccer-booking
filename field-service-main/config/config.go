@@ -18,18 +18,7 @@ type AppConfig struct {
 	RateLimiterMaxRequest float64         `json:"rateLimiterMaxRequest"`
 	RateLimiterTimeSecond int             `json:"rateLimiterTimeSecond"`
 	InternalService       InternalService `json:"internalService"`
-	//GCSType                    string          `json:"gcsType"`
-	//GCSProjectID               string          `json:"gcsProjectID"`
-	//GCSPrivateKeyID            string          `json:"gcsPrivateKeyID"`
-	//GCSPrivateKey              string          `json:"gcsPrivateKey"`
-	//GCSClientEmail             string          `json:"gcsClientEmail"`
-	//GCSClientID                string          `json:"gcsClientID"`
-	//GCSAuthURI                 string          `json:"gcsAuthURI"`
-	//GCSTokenURI                string          `json:"gcsTokenURI"`
-	//GCSAuthProviderX509CertURL string          `json:"gcsAuthProviderX509CertURL"`
-	//GCSClientX509CertURL       string          `json:"gcsClientX509CertURL"`
-	//GCSUniverseDomain          string          `json:"gcsUniverseDomain"`
-	//GCSBucketName              string          `json:"gcsBucketName"`
+	S3                    S3              `json:"s3"`
 }
 
 type Database struct {
@@ -46,6 +35,14 @@ type Database struct {
 
 type InternalService struct {
 	User User `json:"user"`
+}
+
+type S3 struct {
+	Region          string `json:"region"`
+	BucketName      string `json:"bucketName"`
+	BaseURL         string `json:"baseURL"`
+	AccessKeyID     string `json:"accessKeyID"`
+	SecretAccessKey string `json:"secretAccessKey"`
 }
 
 type User struct {

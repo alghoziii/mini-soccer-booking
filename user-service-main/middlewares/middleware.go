@@ -2,9 +2,6 @@ package middlewares
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
 	"github.com/didip/tollbooth"
 	"github.com/didip/tollbooth/limiter"
 	"github.com/gin-gonic/gin"
@@ -65,23 +62,6 @@ func responseUnauthorized(c *gin.Context, message string) {
 	c.Abort()
 }
 
-func validateAPIKey(c *gin.Context) error {
-	apiKey := c.GetHeader(constants.XApiKey)
-	requestAt := c.GetHeader(constants.XRequestAt)
-	serviceName := c.GetHeader(constants.XServiceName)
-	signatureKey := config.Config.SignatureKey
-
-	validateKey := fmt.Sprintf("%s:%s:%s", serviceName, signatureKey, requestAt)
-	hash := sha256.New()
-	hash.Write([]byte(validateKey))
-	resultHash := hex.EncodeToString(hash.Sum(nil))
-
-	if apiKey != resultHash {
-		return errConstant.ErrUnauthorized
-	}
-	return nil
-}
-
 func validateBearerToken(c *gin.Context, token string) error {
 	if !strings.Contains(token, "Bearer") {
 		return errConstant.ErrUnauthorized
@@ -123,12 +103,6 @@ func Authenticate() gin.HandlerFunc {
 		}
 
 		err = validateBearerToken(c, token)
-		if err != nil {
-			responseUnauthorized(c, err.Error())
-			return
-		}
-
-		err = validateAPIKey(c)
 		if err != nil {
 			responseUnauthorized(c, err.Error())
 			return

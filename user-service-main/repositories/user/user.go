@@ -46,7 +46,12 @@ func (r *UserRepository) Register(ctx context.Context, req *dto.RegisterRequest)
 	return &user, nil
 }
 
-func (r *UserRepository) Update(ctx context.Context, req *dto.UpdateRequest, uuid string) (*models.User, error) {
+func (r *UserRepository) Update(ctx context.Context, req *dto.UpdateRequest, uuidStr string) (*models.User, error) {
+	parsedUUID, err := uuid.Parse(uuidStr)
+	if err != nil {
+		return nil, errWrap.WrapError(err)
+	}
+
 	user := models.User{
 		Name:        req.Name,
 		Username:    req.Username,
@@ -55,12 +60,13 @@ func (r *UserRepository) Update(ctx context.Context, req *dto.UpdateRequest, uui
 		Email:       req.Email,
 	}
 
-	err := r.db.WithContext(ctx).
-		Where("uuid = ?", uuid).
+	err = r.db.WithContext(ctx).
+		Where("uuid = ?", uuidStr).
 		Updates(&user).Error
 	if err != nil {
 		return nil, errWrap.WrapError(errConstant.ErrSQLError)
 	}
+	user.UUID = parsedUUID
 	return &user, nil
 }
 

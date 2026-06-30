@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"encoding/base64"
+	"context"
 	"fmt"
 	"github.com/didip/tollbooth"
 	"github.com/didip/tollbooth/limiter"
@@ -11,8 +11,8 @@ import (
 	"net/http"
 	"payment-service/clients"
 	midtransClient "payment-service/clients/midtrans"
-	"payment-service/common/gcs"
 	"payment-service/common/response"
+	"payment-service/common/storage"
 	"payment-service/config"
 	"payment-service/constants"
 	"payment-service/controllers/http"
@@ -50,7 +50,7 @@ var command = &cobra.Command{
 			panic(err)
 		}
 
-		gcs := initGCS()
+		storageClient := initS3()
 		kafka := kafkaClient.NewKafkaRegistry(config.Config.Kafka.Brokers)
 		midtrans := midtransClient.NewMidtransClient(
 			config.Config.Midtrans.ServerKey,
@@ -58,7 +58,7 @@ var command = &cobra.Command{
 		)
 		client := clients.NewClientRegistry()
 		repository := repositories.NewRepositoryRegistry(db)
-		service := services.NewServiceRegistry(repository, gcs, kafka, midtrans)
+		service := services.NewServiceRegistry(repository, storageClient, kafka, midtrans)
 		controller := controllers.NewControllerRegistry(service)
 
 		router := gin.Default()
@@ -109,29 +109,17 @@ func Run() {
 	}
 }
 
-func initGCS() gcs.IGCSClient {
-	decode, err := base64.StdEncoding.DecodeString(config.Config.GCSPrivateKey)
+func initS3() storage.IClient {
+	storageClient, err := storage.NewS3Client(context.Background(), storage.S3Config{
+		Region:          config.Config.S3.Region,
+		BucketName:      config.Config.S3.BucketName,
+		BaseURL:         config.Config.S3.BaseURL,
+		AccessKeyID:     config.Config.S3.AccessKeyID,
+		SecretAccessKey: config.Config.S3.SecretAccessKey,
+	})
 	if err != nil {
 		panic(err)
 	}
 
-	stringPrivateKey := string(decode)
-	gcsServiceAccount := gcs.ServiceAccountKeyJSON{
-		Type:                    config.Config.GCSType,
-		ProjectID:               config.Config.GCSProjectID,
-		PrivateKeyID:            config.Config.GCSPrivateKeyID,
-		PrivateKey:              stringPrivateKey,
-		ClientEmail:             config.Config.GCSClientEmail,
-		ClientID:                config.Config.GCSClientID,
-		AuthURI:                 config.Config.GCSAuthURI,
-		TokenURI:                config.Config.GCSTokenURI,
-		AuthProviderX509CertURL: config.Config.GCSAuthProviderX509CertURL,
-		ClientX509CertURL:       config.Config.GCSClientX509CertURL,
-		UniverseDomain:          config.Config.GCSUniverseDomain,
-	}
-	gcsClient := gcs.NewGCSClient(
-		gcsServiceAccount,
-		config.Config.GCSBucketName,
-	)
-	return gcsClient
+	return storageClient
 }

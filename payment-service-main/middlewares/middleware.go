@@ -2,9 +2,6 @@ package middlewares
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
 	"github.com/didip/tollbooth"
 	"github.com/didip/tollbooth/limiter"
 	"github.com/gin-gonic/gin"
@@ -12,7 +9,6 @@ import (
 	"net/http"
 	"payment-service/clients"
 	"payment-service/common/response"
-	"payment-service/config"
 	"payment-service/constants"
 	errConstant "payment-service/constants/error"
 	"strings"
@@ -64,23 +60,6 @@ func responseUnauthorized(c *gin.Context, message string) {
 	c.Abort()
 }
 
-func validateAPIKey(c *gin.Context) error {
-	apiKey := c.GetHeader(constants.XApiKey)
-	requestAt := c.GetHeader(constants.XRequestAt)
-	serviceName := c.GetHeader(constants.XServiceName)
-	signatureKey := config.Config.SignatureKey
-
-	validateKey := fmt.Sprintf("%s:%s:%s", serviceName, signatureKey, requestAt)
-	hash := sha256.New()
-	hash.Write([]byte(validateKey))
-	resultHash := hex.EncodeToString(hash.Sum(nil))
-
-	if apiKey != resultHash {
-		return errConstant.ErrUnauthorized
-	}
-	return nil
-}
-
 func contains(roles []string, role string) bool {
 	for _, r := range roles {
 		if r == role {
@@ -108,16 +87,9 @@ func CheckRole(roles []string, client clients.IClientRegistry) gin.HandlerFunc {
 
 func Authenticate() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var err error
 		token := c.GetHeader(constants.Authorization)
 		if token == "" {
 			responseUnauthorized(c, errConstant.ErrUnauthorized.Error())
-			return
-		}
-
-		err = validateAPIKey(c)
-		if err != nil {
-			responseUnauthorized(c, err.Error())
 			return
 		}
 

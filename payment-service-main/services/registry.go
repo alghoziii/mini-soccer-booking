@@ -2,17 +2,17 @@ package services
 
 import (
 	clients "payment-service/clients/midtrans"
-	"payment-service/common/gcs"
+	"payment-service/common/storage"
 	"payment-service/controllers/kafka"
 	"payment-service/repositories"
 	services "payment-service/services/payment"
 )
 
 type Registry struct {
-	repository repositories.IRepositoryRegistry
-	gcs        gcs.IGCSClient
-	kafka      kafka.IKafkaRegistry
-	midtrans   clients.IMidtransClient
+	repository    repositories.IRepositoryRegistry
+	storageClient storage.IClient
+	kafka         kafka.IKafkaRegistry
+	midtrans      clients.IMidtransClient
 }
 
 type IServiceRegistry interface {
@@ -21,18 +21,18 @@ type IServiceRegistry interface {
 
 func NewServiceRegistry(
 	repository repositories.IRepositoryRegistry,
-	gcs gcs.IGCSClient,
+	storageClient storage.IClient,
 	kafka kafka.IKafkaRegistry,
 	midtrans clients.IMidtransClient,
 ) IServiceRegistry {
 	return &Registry{
-		repository: repository,
-		gcs:        gcs,
-		kafka:      kafka,
-		midtrans:   midtrans,
+		repository:    repository,
+		storageClient: storageClient,
+		kafka:         kafka,
+		midtrans:      midtrans,
 	}
 }
 
 func (r *Registry) GetPayment() services.IPaymentService {
-	return services.NewPaymentService(r.repository, r.gcs, r.kafka, r.midtrans)
+	return services.NewPaymentService(r.repository, r.storageClient, r.kafka, r.midtrans)
 }

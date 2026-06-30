@@ -9,7 +9,7 @@ import (
 	"math/rand"
 	"os"
 	clients "payment-service/clients/midtrans"
-	"payment-service/common/gcs"
+	"payment-service/common/storage"
 	"payment-service/common/util"
 	config2 "payment-service/config"
 	"payment-service/constants"
@@ -23,10 +23,10 @@ import (
 )
 
 type PaymentService struct {
-	repository repositories.IRepositoryRegistry
-	gcs        gcs.IGCSClient
-	kafka      kafka.IKafkaRegistry
-	midtrans   clients.IMidtransClient
+	repository    repositories.IRepositoryRegistry
+	storageClient storage.IClient
+	kafka         kafka.IKafkaRegistry
+	midtrans      clients.IMidtransClient
 }
 
 type IPaymentService interface {
@@ -38,15 +38,15 @@ type IPaymentService interface {
 
 func NewPaymentService(
 	repository repositories.IRepositoryRegistry,
-	gcs gcs.IGCSClient,
+	storageClient storage.IClient,
 	kafka kafka.IKafkaRegistry,
 	midtrans clients.IMidtransClient,
 ) IPaymentService {
 	return &PaymentService{
-		repository: repository,
-		gcs:        gcs,
-		kafka:      kafka,
-		midtrans:   midtrans,
+		repository:    repository,
+		storageClient: storageClient,
+		kafka:         kafka,
+		midtrans:      midtrans,
 	}
 }
 
@@ -206,10 +206,10 @@ func (p *PaymentService) generatePDF(req *dto.InvoiceRequest) ([]byte, error) {
 	return pdf, nil
 }
 
-func (p *PaymentService) uploadToGCS(ctx context.Context, invoiceNumber string, pdf []byte) (string, error) {
+func (p *PaymentService) uploadToS3(ctx context.Context, invoiceNumber string, pdf []byte) (string, error) {
 	invoiceNumberReplace := strings.ToLower(strings.ReplaceAll(invoiceNumber, "/", "-"))
 	filename := fmt.Sprintf("%s.pdf", invoiceNumberReplace)
-	url, err := p.gcs.UploadFile(ctx, filename, pdf)
+	url, err := p.storageClient.UploadFile(ctx, filename, pdf)
 	if err != nil {
 		return "", err
 	}
@@ -351,7 +351,7 @@ func (p *PaymentService) Webhook(ctx context.Context, req *dto.Webhook) error {
 				return txErr
 			}
 
-			invoiceLink, txErr = p.uploadToGCS(ctx, invoiceNumber, pdf)
+			invoiceLink, txErr = p.uploadToS3(ctx, invoiceNumber, pdf)
 			if txErr != nil {
 				return txErr
 			}

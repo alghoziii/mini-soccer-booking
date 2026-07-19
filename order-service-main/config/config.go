@@ -10,27 +10,18 @@ import (
 var Config AppConfig
 
 type AppConfig struct {
-	Port                       int             `json:"port"`
-	AppName                    string          `json:"appName"`
-	AppEnv                     string          `json:"appEnv"`
-	SignatureKey               string          `json:"signatureKey"`
-	Database                   Database        `json:"database"`
-	RateLimiterMaxRequest      float64         `json:"rateLimiterMaxRequest"`
-	RateLimiterTimeSecond      int             `json:"rateLimiterTimeSecond"`
-	InternalService            InternalService `json:"internalService"`
-	GCSType                    string          `json:"gcsType"`
-	GCSProjectID               string          `json:"gcsProjectID"`
-	GCSPrivateKeyID            string          `json:"gcsPrivateKeyID"`
-	GCSPrivateKey              string          `json:"gcsPrivateKey"`
-	GCSClientEmail             string          `json:"gcsClientEmail"`
-	GCSClientID                string          `json:"gcsClientID"`
-	GCSAuthURI                 string          `json:"gcsAuthURI"`
-	GCSTokenURI                string          `json:"gcsTokenURI"`
-	GCSAuthProviderX509CertURL string          `json:"gcsAuthProviderX509CertURL"`
-	GCSClientX509CertURL       string          `json:"gcsClientX509CertURL"`
-	GCSUniverseDomain          string          `json:"gcsUniverseDomain"`
-	GCSBucketName              string          `json:"gcsBucketName"`
-	Kafka                      Kafka           `json:"kafka"`
+	Port                  int             `json:"port"`
+	AppName               string          `json:"appName"`
+	AppEnv                string          `json:"appEnv"`
+	AwsAccessKeyID        string          `json:"awsAccessKeyID"`
+	AwsSecretAccessKey    string          `json:"awsSecretAccessKey"`
+	AwsRegion             string          `json:"awsRegion"`
+	S3BucketName          string          `json:"s3BucketName"`
+	Database              Database        `json:"database"`
+	RateLimiterMaxRequest float64         `json:"rateLimiterMaxRequest"`
+	RateLimiterTimeSecond int             `json:"rateLimiterTimeSecond"`
+	InternalService       InternalService `json:"internalService"`
+	Kafka                 Kafka           `json:"kafka"`
 }
 
 type Database struct {

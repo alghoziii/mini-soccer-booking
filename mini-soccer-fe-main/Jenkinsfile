@@ -2,6 +2,8 @@ pipeline {
   agent any
 
   environment {
+    REPO_URL = 'https://github.com/alghoziii/mini-soccer-booking.git'
+    SERVICE_DIR = 'mini-soccer-fe-main'
     IMAGE_NAME = 'mini-soccer-fe'
     DOCKER_CREDENTIALS = credentials('docker-credential')
     GITHUB_CREDENTIALS = credentials('github-credential')
@@ -38,11 +40,14 @@ pipeline {
       steps {
         script {
           echo "GIT_BRANCH: ${env.GIT_BRANCH}"
-          if (env.GIT_BRANCH == 'origin/main') {
+          if (env.GIT_BRANCH == 'origin/main' || env.GIT_BRANCH == 'main') {
             env.TARGET_BRANCH = 'main'
-          } else if (env.GIT_BRANCH == 'origin/development') {
+          } else if (env.GIT_BRANCH == 'origin/development' || env.GIT_BRANCH == 'development') {
             env.TARGET_BRANCH = 'development'
+          } else {
+            env.TARGET_BRANCH = 'main'
           }
+          echo "TARGET_BRANCH: ${env.TARGET_BRANCH}"
         }
       }
     }
@@ -50,14 +55,12 @@ pipeline {
     stage('Checkout Code') {
       steps {
         script {
-          def repoUrl = 'https://github.com/Mini-Soccer-Project/mini-soccer-fe.git'
-
           checkout([$class: 'GitSCM',
             branches: [
               [name: "*/${env.TARGET_BRANCH}"]
             ],
             userRemoteConfigs: [
-              [url: repoUrl, credentialsId: 'github-credential']
+              [url: env.REPO_URL, credentialsId: 'github-credential']
             ]
           ])
         }
@@ -78,19 +81,23 @@ pipeline {
 
     stage('Build and Push Docker Image') {
       steps {
-        script {
-          def runNumber = currentBuild.number
-          sh "docker build -t ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber} ."
-          sh "docker push ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber}"
+        dir("${env.SERVICE_DIR}") {
+          script {
+            def runNumber = currentBuild.number
+            sh "docker build -t ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber} ."
+            sh "docker push ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber}"
+          }
         }
       }
     }
 
     stage('Update docker-compose.yaml') {
       steps {
-        script {
-          def runNumber = currentBuild.number
-          sh "sed -i 's|image: ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:[0-9]\\+|image: ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber}|' docker-compose.yaml"
+        dir("${env.SERVICE_DIR}") {
+          script {
+            def runNumber = currentBuild.number
+            sh "sed -i -E 's|image: .*/${IMAGE_NAME}:.*|image: ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber}|' docker-compose.yaml"
+          }
         }
       }
     }
@@ -101,9 +108,9 @@ pipeline {
           sh """
           git config --global user.name 'Jenkins CI'
           git config --global user.email 'jenkins@company.com'
-          git remote set-url origin https://${GITHUB_CREDENTIALS_USR}:${GITHUB_CREDENTIALS_PSW}@github.com/Mini-Soccer-Project/mini-soccer-fe.git
-          git add docker-compose.yaml
-          git commit -m 'Update image version to ${TARGET_BRANCH}-${currentBuild.number} [skip ci]' || echo 'No changes to commit'
+          git remote set-url origin https://${GITHUB_CREDENTIALS_USR}:${GITHUB_CREDENTIALS_PSW}@github.com/alghoziii/mini-soccer-booking.git
+          git add ${env.SERVICE_DIR}/docker-compose.yaml
+          git commit -m 'Update ${IMAGE_NAME} image version to ${TARGET_BRANCH}-${currentBuild.number} [skip ci]' || echo 'No changes to commit'
           git pull origin ${TARGET_BRANCH} --rebase
           git push origin HEAD:${TARGET_BRANCH}
           """
@@ -114,26 +121,29 @@ pipeline {
     stage('Deploy to Remote Server') {
       steps {
         script {
-          def targetDir = "/home/faisalilhami/mini-soccer-project/mini-soccer-fe"
+          def repoDir = "/home/${USERNAME}/mini-soccer-booking"
+          def serviceDir = "${repoDir}/${env.SERVICE_DIR}"
           def sshCommandToServer = """
           ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ${USERNAME}@${HOST} '
-            if [ -d "${targetDir}/.git" ]; then
+            if [ -d "${repoDir}/.git" ]; then
                 echo "Directory exists. Pulling latest changes."
-                cd "${targetDir}"
+                cd "${repoDir}"
                 git pull origin "${TARGET_BRANCH}"
             else
                 echo "Directory does not exist. Cloning repository."
-                git clone -b "${TARGET_BRANCH}" git@github.com:Mini-Soccer-Project/mini-soccer-fe.git "${targetDir}"
-                cd "${targetDir}"
+                git clone -b "${TARGET_BRANCH}" https://github.com/alghoziii/mini-soccer-booking.git "${repoDir}"
+                cd "${repoDir}"
             fi
+
+            cd "${serviceDir}"
             npm install --legacy-peer-deps
             cp .env.example .env
-            sed -i "s/^CONSUL_HTTP_URL=.*/CONSUL_HTTP_URL=${CONSUL_HTTP_URL}/" "${targetDir}/.env"
-            sed -i "s/^CONSUL_HTTP_TOKEN=.*/CONSUL_HTTP_TOKEN=${CONSUL_HTTP_TOKEN}/" "${targetDir}/.env"
-            sed -i "s/^CONSUL_HTTP_PATH=.*/CONSUL_HTTP_PATH=frontend\\/mini-soccer-fe/" "${targetDir}/.env"
+            sed -i "s/^CONSUL_HTTP_URL=.*/CONSUL_HTTP_URL=${CONSUL_HTTP_URL}/" .env
+            sed -i "s/^CONSUL_HTTP_TOKEN=.*/CONSUL_HTTP_TOKEN=${CONSUL_HTTP_TOKEN}/" .env
+            sed -i "s/^CONSUL_HTTP_PATH=.*/CONSUL_HTTP_PATH=frontend\\/mini-soccer-fe/" .env
             npm run consul
             npm run build
-            docker compose up -d --build --force-recreate
+            sudo docker compose up -d --build --force-recreate
           '
           """
           sh sshCommandToServer

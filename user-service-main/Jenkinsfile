@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  triggers {
+    pollSCM('* * * * *') // Jenkins akan mengecek perubahan di GitHub setiap 1 menit
+  }
+
   environment {
     REPO_URL = 'https://github.com/alghoziii/mini-soccer-booking.git'
     SERVICE_DIR = 'user-service-main'

@@ -7,7 +7,6 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         docker-cli \
         docker-buildx \
-        docker-compose-plugin \
         git \
         curl && \
     rm -rf /var/lib/apt/lists/*

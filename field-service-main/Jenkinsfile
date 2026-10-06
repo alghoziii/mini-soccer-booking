@@ -6,7 +6,6 @@ pipeline {
     SERVICE_DIR = 'field-service-main'
     IMAGE_NAME = 'field-service'
     DOCKER_CREDENTIALS = credentials('docker-credential')
-    GITHUB_CREDENTIALS = credentials('github-credential')
     SSH_KEY = credentials('ssh-key')
     HOST = credentials('host')
     USERNAME = credentials('username')
@@ -100,22 +99,6 @@ pipeline {
       }
     }
 
-    stage('Commit and Push Changes') {
-      steps {
-        script {
-          sh """
-          git config --global user.name 'Jenkins CI'
-          git config --global user.email 'jenkins@company.com'
-          git remote set-url origin https://${GITHUB_CREDENTIALS_USR}:${GITHUB_CREDENTIALS_PSW}@github.com/alghoziii/mini-soccer-booking.git
-          git add ${env.SERVICE_DIR}/docker-compose.yaml
-          git commit -m 'Update ${IMAGE_NAME} image version to ${TARGET_BRANCH}-${currentBuild.number} [skip ci]' || echo 'No changes to commit'
-          git pull origin ${TARGET_BRANCH} --rebase
-          git push origin HEAD:${TARGET_BRANCH}
-          """
-        }
-      }
-    }
-
     stage('Deploy Locally') {
       steps {
         dir("${env.SERVICE_DIR}") {
@@ -124,9 +107,9 @@ pipeline {
             
             sh 'cp .env.example .env'
             sh "sed -i 's|^TIMEZONE=.*|TIMEZONE=Asia/Jakarta|' .env"
-
-            sh "docker rm -f field-service || true"
-            sh "docker run -d --name field-service --env-file .env -p 8003:8003 ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber}"
+            
+            // Execute docker compose
+            sh "docker-compose up -d --force-recreate"
           }
         }
       }

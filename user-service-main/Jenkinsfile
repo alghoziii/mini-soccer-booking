@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   triggers {
-    pollSCM('* * * * *') // Jenkins akan mengecek perubahan di GitHub setiap 1 menit
+    pollSCM('* * * * *') // Jenkins akan mengecek perubahan di GitHub setiap 1 menit atau cron syntax
   }
 
   environment {

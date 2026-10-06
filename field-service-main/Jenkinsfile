@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  triggers {
+    pollSCM('* * * * *')
+  }
+
   environment {
     REPO_URL = 'https://github.com/alghoziii/mini-soccer-booking.git'
     SERVICE_DIR = 'field-service-main'

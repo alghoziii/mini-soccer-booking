@@ -64,43 +64,26 @@ pipeline {
         dir("${env.SERVICE_DIR}") {
           script {
             def runNumber = currentBuild.number
-            sh "docker build --platform linux/amd64 -t ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber} ."
+            sh "docker build -t ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber} ."
             sh "docker push ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber}"
           }
         }
       }
     }
 
-    stage('Deploy to Remote Server') {
+    stage('Deploy Locally') {
       steps {
-        script {
-          def runNumber = currentBuild.number
-          def sshCommandToServer = """
-          ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ${USERNAME}@${HOST} '
-            repoDir="\$HOME/mini-soccer-booking"
-            serviceDir="\$repoDir/${env.SERVICE_DIR}"
+        dir("${env.SERVICE_DIR}") {
+          script {
+            def runNumber = currentBuild.number
+            
+            if (!fileExists('.env')) {
+                sh 'cp .env.example .env'
+            }
 
-            if [ -d "\$repoDir/.git" ]; then
-                echo "Directory exists. Pulling latest changes."
-                cd "\$repoDir"
-                git pull origin "${TARGET_BRANCH}"
-            else
-                echo "Directory does not exist. Cloning repository."
-                git clone -b "${TARGET_BRANCH}" https://github.com/alghoziii/mini-soccer-booking.git "\$repoDir"
-                cd "\$repoDir"
-            fi
-
-            cd "\$serviceDir"
-            if [ ! -f .env ]; then
-                cp .env.example .env
-            fi
-
-            sed -i -E "s|image: .*/${IMAGE_NAME}:.*|image: ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber}|" docker-compose.yaml
-            docker compose pull
-            docker compose up -d --force-recreate
-          '
-          """
-          sh sshCommandToServer
+            sh "sed -i -E \"s|image: .*/${IMAGE_NAME}:.*|image: ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber}|\" docker-compose.yaml"
+            sh "docker compose up -d --force-recreate"
+          }
         }
       }
     }

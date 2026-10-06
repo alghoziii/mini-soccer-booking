@@ -119,34 +119,22 @@ pipeline {
       }
     }
 
-    stage('Deploy to Remote Server') {
+    stage('Deploy Locally') {
       steps {
-        script {
-          def repoDir = "/home/${USERNAME}/mini-soccer-booking"
-          def serviceDir = "${repoDir}/${env.SERVICE_DIR}"
-          def sshCommandToServer = """
-          ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ${USERNAME}@${HOST} '
-            if [ -d "${repoDir}/.git" ]; then
-                echo "Directory exists. Pulling latest changes."
-                cd "${repoDir}"
-                git pull origin "${TARGET_BRANCH}"
-            else
-                echo "Directory does not exist. Cloning repository."
-                git clone -b "${TARGET_BRANCH}" https://github.com/alghoziii/mini-soccer-booking.git "${repoDir}"
-                cd "${repoDir}"
-            fi
+        dir("${env.SERVICE_DIR}") {
+          script {
+            def runNumber = currentBuild.number
+            
+            sh 'cp .env.example .env'
+            sh "sed -i 's|^TIMEZONE=.*|TIMEZONE=Asia/Jakarta|' .env"
+            sh "sed -i 's|^CONSUL_HTTP_URL=.*|CONSUL_HTTP_URL=${CONSUL_HTTP_URL}|' .env"
+            sh "sed -i 's|^CONSUL_HTTP_PATH=.*|CONSUL_HTTP_PATH=backend/${IMAGE_NAME}|' .env"
+            sh "sed -i 's|^CONSUL_HTTP_TOKEN=.*|CONSUL_HTTP_TOKEN=${CONSUL_HTTP_TOKEN}|' .env"
+            sh "sed -i 's|^CONSUL_WATCH_INTERVAL_SECONDS=.*|CONSUL_WATCH_INTERVAL_SECONDS=${CONSUL_WATCH_INTERVAL_SECONDS}|' .env"
 
-            cd "${serviceDir}"
-            cp .env.example .env
-            sed -i "s/^TIMEZONE=.*/TIMEZONE=Asia\\/Jakarta/" .env
-            sed -i "s/^CONSUL_HTTP_URL=.*/CONSUL_HTTP_URL=${CONSUL_HTTP_URL}/" .env
-            sed -i "s/^CONSUL_HTTP_PATH=.*/CONSUL_HTTP_PATH=backend\\/${IMAGE_NAME}/" .env
-            sed -i "s/^CONSUL_HTTP_TOKEN=.*/CONSUL_HTTP_TOKEN=${CONSUL_HTTP_TOKEN}/" .env
-            sed -i "s/^CONSUL_WATCH_INTERVAL_SECONDS=.*/CONSUL_WATCH_INTERVAL_SECONDS=${CONSUL_WATCH_INTERVAL_SECONDS}/" .env
-            sudo docker compose up -d --build --force-recreate
-          '
-          """
-          sh sshCommandToServer
+            sh "docker rm -f payment-service || true"
+            sh "docker run -d --name payment-service --env-file .env -p 8004:8004 ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber}"
+          }
         }
       }
     }

@@ -84,6 +84,13 @@ pipeline {
         dir("${env.SERVICE_DIR}") {
           script {
             def runNumber = currentBuild.number
+            
+            // Prepare env for build so npm run consul works inside Dockerfile
+            sh 'cp .env.example .env'
+            sh "sed -i 's|^CONSUL_HTTP_URL=.*|CONSUL_HTTP_URL=${CONSUL_HTTP_URL}|' .env"
+            sh "sed -i 's|^CONSUL_HTTP_TOKEN=.*|CONSUL_HTTP_TOKEN=${CONSUL_HTTP_TOKEN}|' .env"
+            sh "sed -i 's|^CONSUL_HTTP_PATH=.*|CONSUL_HTTP_PATH=frontend/mini-soccer-fe|' .env"
+
             sh "docker build -t ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber} ."
             sh "docker push ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber}"
           }
@@ -118,35 +125,14 @@ pipeline {
       }
     }
 
-    stage('Deploy to Remote Server') {
+    stage('Deploy Locally') {
       steps {
-        script {
-          def repoDir = "/home/${USERNAME}/mini-soccer-booking"
-          def serviceDir = "${repoDir}/${env.SERVICE_DIR}"
-          def sshCommandToServer = """
-          ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ${USERNAME}@${HOST} '
-            if [ -d "${repoDir}/.git" ]; then
-                echo "Directory exists. Pulling latest changes."
-                cd "${repoDir}"
-                git pull origin "${TARGET_BRANCH}"
-            else
-                echo "Directory does not exist. Cloning repository."
-                git clone -b "${TARGET_BRANCH}" https://github.com/alghoziii/mini-soccer-booking.git "${repoDir}"
-                cd "${repoDir}"
-            fi
-
-            cd "${serviceDir}"
-            npm install --legacy-peer-deps
-            cp .env.example .env
-            sed -i "s/^CONSUL_HTTP_URL=.*/CONSUL_HTTP_URL=${CONSUL_HTTP_URL}/" .env
-            sed -i "s/^CONSUL_HTTP_TOKEN=.*/CONSUL_HTTP_TOKEN=${CONSUL_HTTP_TOKEN}/" .env
-            sed -i "s/^CONSUL_HTTP_PATH=.*/CONSUL_HTTP_PATH=frontend\\/mini-soccer-fe/" .env
-            npm run consul
-            npm run build
-            sudo docker compose up -d --build --force-recreate
-          '
-          """
-          sh sshCommandToServer
+        dir("${env.SERVICE_DIR}") {
+          script {
+            def runNumber = currentBuild.number
+            sh "docker rm -f mini-soccer-fe || true"
+            sh "docker run -d --name mini-soccer-fe --env-file .env -p 3000:3000 ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber}"
+          }
         }
       }
     }

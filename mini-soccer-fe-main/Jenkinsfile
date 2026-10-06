@@ -10,8 +10,6 @@ pipeline {
     SSH_KEY = credentials('ssh-key')
     HOST = credentials('host')
     USERNAME = credentials('username')
-    CONSUL_HTTP_URL = credentials('consul-http-url')
-    CONSUL_HTTP_TOKEN = credentials('consul-http-token')
   }
 
   stages {
@@ -85,11 +83,8 @@ pipeline {
           script {
             def runNumber = currentBuild.number
             
-            // Prepare env for build so npm run consul works inside Dockerfile
+            // Prepare env for build
             sh 'cp .env.example .env'
-            sh "sed -i 's|^CONSUL_HTTP_URL=.*|CONSUL_HTTP_URL=${CONSUL_HTTP_URL}|' .env"
-            sh "sed -i 's|^CONSUL_HTTP_TOKEN=.*|CONSUL_HTTP_TOKEN=${CONSUL_HTTP_TOKEN}|' .env"
-            sh "sed -i 's|^CONSUL_HTTP_PATH=.*|CONSUL_HTTP_PATH=frontend/mini-soccer-fe|' .env"
 
             sh "docker build -t ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber} ."
             sh "docker push ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber}"

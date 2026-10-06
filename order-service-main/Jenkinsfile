@@ -10,9 +10,6 @@ pipeline {
     SSH_KEY = credentials('ssh-key')
     HOST = credentials('host')
     USERNAME = credentials('username')
-    CONSUL_HTTP_URL = credentials('consul-http-url')
-    CONSUL_HTTP_TOKEN = credentials('consul-http-token')
-    CONSUL_WATCH_INTERVAL_SECONDS = 60
   }
 
   stages {
@@ -127,10 +124,6 @@ pipeline {
             
             sh 'cp .env.example .env'
             sh "sed -i 's|^TIMEZONE=.*|TIMEZONE=Asia/Jakarta|' .env"
-            sh "sed -i 's|^CONSUL_HTTP_URL=.*|CONSUL_HTTP_URL=${CONSUL_HTTP_URL}|' .env"
-            sh "sed -i 's|^CONSUL_HTTP_PATH=.*|CONSUL_HTTP_PATH=backend/${IMAGE_NAME}|' .env"
-            sh "sed -i 's|^CONSUL_HTTP_TOKEN=.*|CONSUL_HTTP_TOKEN=${CONSUL_HTTP_TOKEN}|' .env"
-            sh "sed -i 's|^CONSUL_WATCH_INTERVAL_SECONDS=.*|CONSUL_WATCH_INTERVAL_SECONDS=${CONSUL_WATCH_INTERVAL_SECONDS}|' .env"
 
             sh "docker rm -f order-service || true"
             sh "docker run -d --name order-service --env-file .env -p 8002:8002 ${DOCKER_CREDENTIALS_USR}/${IMAGE_NAME}:${runNumber}"

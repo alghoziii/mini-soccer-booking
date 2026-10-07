@@ -7,7 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
+	"github.com/sirupsen/logrus"
 	"net/http"
+	"os"
 	"time"
 	"user-service/common/response"
 	"user-service/config"
@@ -53,6 +55,7 @@ var command = &cobra.Command{
 
 		router := gin.Default()
 		router.Use(middlewares.HandlePanic())
+		router.Use(middlewares.RequestLogger())
 		router.NoRoute(func(c *gin.Context) {
 			c.JSON(http.StatusNotFound, response.Response{
 				Status:  constants.Error,
@@ -92,7 +95,26 @@ var command = &cobra.Command{
 	},
 }
 
+type RequestIDHook struct{}
+
+func (h *RequestIDHook) Levels() []logrus.Level {
+	return logrus.AllLevels
+}
+
+func (h *RequestIDHook) Fire(e *logrus.Entry) error {
+	if e.Context != nil {
+		if reqID, ok := e.Context.Value("request_id").(string); ok {
+			e.Data["request_id"] = reqID
+		}
+	}
+	return nil
+}
+
 func Run() {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetOutput(os.Stdout)
+	logrus.AddHook(&RequestIDHook{})
+
 	err := command.Execute()
 	if err != nil {
 		panic(err)

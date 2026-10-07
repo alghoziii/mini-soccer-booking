@@ -6,9 +6,11 @@ import (
 	"github.com/didip/tollbooth/limiter"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+	"time"
 	"user-service/common/response"
 	"user-service/config"
 	"user-service/constants"
@@ -109,5 +111,26 @@ func Authenticate() gin.HandlerFunc {
 		}
 
 		c.Next()
+	}
+}
+
+func RequestLogger() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+
+		reqID := uuid.New().String()
+		
+		ctx := context.WithValue(c.Request.Context(), "request_id", reqID)
+		c.Request = c.Request.WithContext(ctx)
+
+		c.Next()
+
+		latency := time.Since(start)
+		logrus.WithContext(ctx).WithFields(logrus.Fields{
+			"method":  c.Request.Method,
+			"path":    c.Request.URL.Path,
+			"status":  c.Writer.Status(),
+			"latency": latency.String(),
+		}).Info("HTTP Request")
 	}
 }

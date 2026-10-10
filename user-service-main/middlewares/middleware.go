@@ -118,7 +118,10 @@ func RequestLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
-		reqID := uuid.New().String()
+		reqID := c.GetHeader("X-Request-ID")
+		if reqID == "" {
+			reqID = uuid.New().String()
+		}
 		
 		ctx := context.WithValue(c.Request.Context(), "request_id", reqID)
 		c.Request = c.Request.WithContext(ctx)
@@ -126,7 +129,8 @@ func RequestLogger() gin.HandlerFunc {
 		c.Next()
 
 		latency := time.Since(start)
-		logrus.WithContext(ctx).WithFields(logrus.Fields{
+		logrus.WithFields(logrus.Fields{
+			"request_id": reqID,
 			"method":  c.Request.Method,
 			"path":    c.Request.URL.Path,
 			"status":  c.Writer.Status(),

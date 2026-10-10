@@ -19,8 +19,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
+	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
+	"os"
 )
 
 var command = &cobra.Command{
@@ -55,8 +57,9 @@ var command = &cobra.Command{
 		service := services.NewServiceRegistry(repository, storageClient)
 		controller := controllers.NewControllerRegistry(service)
 
-		router := gin.Default()
+		router := gin.New()
 		router.Use(middlewares.HandlePanic())
+		router.Use(middlewares.RequestLogger())
 		router.NoRoute(func(c *gin.Context) {
 			c.JSON(http.StatusNotFound, response.Response{
 				Status:  constants.Error,
@@ -96,7 +99,12 @@ var command = &cobra.Command{
 	},
 }
 
+
+
 func Run() {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetOutput(os.Stdout)
+
 	err := command.Execute()
 	if err != nil {
 		panic(err)

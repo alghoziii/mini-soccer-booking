@@ -1,8 +1,8 @@
-GREEN  := $(shell tput -Txterm setaf 2)
-YELLOW := $(shell tput -Txterm setaf 3)
-WHITE  := $(shell tput -Txterm setaf 7)
-CYAN   := $(shell tput -Txterm setaf 6)
-RESET  := $(shell tput -Txterm sgr0)
+GREEN  := ""
+YELLOW := ""
+WHITE  := ""
+CYAN   := ""
+RESET  := ""
 
 ## Live reload:
 watch-prepare: ## Install the tools required for the watch command

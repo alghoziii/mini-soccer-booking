@@ -31,7 +31,7 @@ func (t *TimeRepository) FindAll(ctx context.Context) ([]models.Time, error) {
 	var times []models.Time
 	err := t.db.WithContext(ctx).Find(&times).Error
 	if err != nil {
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 
 	return times, nil
@@ -42,9 +42,9 @@ func (t *TimeRepository) FindByUUID(ctx context.Context, uuid string) (*models.T
 	err := t.db.WithContext(ctx).Where("uuid = ?", uuid).First(&time).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errWrap.WrapError(errTime.ErrTimeNotFound)
+			return nil, errWrap.WrapErrorWithContext(ctx, errTime.ErrTimeNotFound)
 		}
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 
 	return &time, nil
@@ -55,9 +55,9 @@ func (t *TimeRepository) FindByID(ctx context.Context, id int) (*models.Time, er
 	err := t.db.WithContext(ctx).Where("id = ?", id).First(&time).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errWrap.WrapError(errTime.ErrTimeNotFound)
+			return nil, errWrap.WrapErrorWithContext(ctx, errTime.ErrTimeNotFound)
 		}
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 
 	return &time, nil
@@ -68,7 +68,7 @@ func (t *TimeRepository) Create(ctx context.Context, time *models.Time) (*models
 	fmt.Println("time", time)
 	err := t.db.WithContext(ctx).Create(time).Error
 	if err != nil {
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return time, nil
 }

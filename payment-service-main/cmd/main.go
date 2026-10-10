@@ -20,9 +20,11 @@ import (
 	"payment-service/domain/models"
 	"payment-service/middlewares"
 	"payment-service/repositories"
+	"github.com/sirupsen/logrus"
 	"payment-service/routes"
 	"payment-service/services"
 	"time"
+	"os"
 )
 
 var command = &cobra.Command{
@@ -61,8 +63,9 @@ var command = &cobra.Command{
 		service := services.NewServiceRegistry(repository, storageClient, kafka, midtrans)
 		controller := controllers.NewControllerRegistry(service)
 
-		router := gin.Default()
+		router := gin.New()
 		router.Use(middlewares.HandlePanic())
+		router.Use(middlewares.RequestLogger())
 		router.NoRoute(func(c *gin.Context) {
 			c.JSON(http.StatusNotFound, response.Response{
 				Status:  constants.Error,
@@ -102,7 +105,12 @@ var command = &cobra.Command{
 	},
 }
 
+
+
 func Run() {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetOutput(os.Stdout)
+
 	err := command.Execute()
 	if err != nil {
 		panic(err)

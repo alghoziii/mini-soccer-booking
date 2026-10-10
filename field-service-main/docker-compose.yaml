@@ -2,8 +2,12 @@ name: booking-field-app
 services:
   field-service:
     container_name: field-service
-    image: sikoding20/field-service:7
+    image: sikoding20/field-service:8
     ports:
       - "8002:8002"
-    env_file:
-      - .env
+
+
+networks:
+  default:
+    name: booking-order-app_default
+    external: true

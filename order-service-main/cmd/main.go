@@ -60,15 +60,21 @@ var command = &cobra.Command{
 	},
 }
 
+
+
 func Run() {
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logrus.SetOutput(os.Stdout)
+
 	if err := command.Execute(); err != nil {
 		panic(err)
 	}
 }
 
 func serveHttp(controller controllers.IControllerRegistry, client clients.IClientRegistry) {
-	router := gin.Default()
+	router := gin.New()
 	router.Use(middlewares.HandlePanic())
+	router.Use(middlewares.RequestLogger())
 	router.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, response.Response{
 			Status:  constants.Error,

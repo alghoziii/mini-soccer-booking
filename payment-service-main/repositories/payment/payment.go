@@ -55,7 +55,7 @@ func (p *PaymentRepository) FindAllWithPagination(
 		Find(&fields).
 		Error
 	if err != nil {
-		return nil, 0, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, 0, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 
 	err = p.db.
@@ -64,7 +64,7 @@ func (p *PaymentRepository) FindAllWithPagination(
 		Count(&total).
 		Error
 	if err != nil {
-		return nil, 0, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, 0, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 
 	return fields, total, nil
@@ -79,9 +79,9 @@ func (p *PaymentRepository) FindByUUID(ctx context.Context, uuid string) (*model
 		Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errWrap.WrapError(errPayment.ErrPaymentNotFound)
+			return nil, errWrap.WrapErrorWithContext(ctx, errPayment.ErrPaymentNotFound)
 		}
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return &payment, nil
 }
@@ -95,9 +95,9 @@ func (p *PaymentRepository) FindByOrderID(ctx context.Context, orderID string) (
 		Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errWrap.WrapError(errPayment.ErrPaymentNotFound)
+			return nil, errWrap.WrapErrorWithContext(ctx, errPayment.ErrPaymentNotFound)
 		}
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return &payment, nil
 }
@@ -121,7 +121,7 @@ func (p *PaymentRepository) Create(
 
 	err := tx.WithContext(ctx).Create(&payment).Error
 	if err != nil {
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return &payment, nil
 }
@@ -144,7 +144,7 @@ func (p *PaymentRepository) Update(
 
 	err := tx.WithContext(ctx).Where("order_id = ?", orderID).Updates(&payment).Error
 	if err != nil {
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return &payment, nil
 }

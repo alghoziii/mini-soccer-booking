@@ -32,7 +32,7 @@ func (o *OrderFieldRepository) FindByOrderID(
 		Find(&orderFields).
 		Error
 	if err != nil {
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return orderFields, nil
 }
@@ -43,7 +43,7 @@ func (o *OrderFieldRepository) Create(ctx context.Context, tx *gorm.DB, request 
 		Create(&request).
 		Error
 	if err != nil {
-		return errWrap.WrapError(errConstant.ErrSQLError)
+		return errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 
 	return nil

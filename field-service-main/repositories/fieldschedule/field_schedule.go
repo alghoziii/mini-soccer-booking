@@ -59,7 +59,7 @@ func (f *FieldScheduleRepository) FindAllWithPagination(
 		Find(&fieldSchedules).
 		Error
 	if err != nil {
-		return nil, 0, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, 0, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 
 	err = f.db.
@@ -68,7 +68,7 @@ func (f *FieldScheduleRepository) FindAllWithPagination(
 		Count(&total).
 		Error
 	if err != nil {
-		return nil, 0, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, 0, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 
 	return fieldSchedules, total, nil
@@ -91,7 +91,7 @@ func (f *FieldScheduleRepository) FindAllByFieldIDAndDate(
 		Find(&fieldSchedules).
 		Error
 	if err != nil {
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return fieldSchedules, nil
 }
@@ -107,9 +107,9 @@ func (f *FieldScheduleRepository) FindByUUID(ctx context.Context, uuid string) (
 		Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errWrap.WrapError(errFieldSchedule.ErrFieldScheduleNotFound)
+			return nil, errWrap.WrapErrorWithContext(ctx, errFieldSchedule.ErrFieldScheduleNotFound)
 		}
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return &fieldSchedule, nil
 }
@@ -131,7 +131,7 @@ func (f *FieldScheduleRepository) FindByDateAndTimeID(
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return &fieldSchedule, nil
 }
@@ -139,7 +139,7 @@ func (f *FieldScheduleRepository) FindByDateAndTimeID(
 func (f *FieldScheduleRepository) Create(ctx context.Context, req []models.FieldSchedule) error {
 	err := f.db.WithContext(ctx).Create(&req).Error
 	if err != nil {
-		return errWrap.WrapError(errConstant.ErrSQLError)
+		return errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return nil
 }
@@ -157,7 +157,7 @@ func (f *FieldScheduleRepository) Update(
 	fieldSchedule.Date = req.Date
 	err = f.db.WithContext(ctx).Save(&fieldSchedule).Error
 	if err != nil {
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return fieldSchedule, nil
 }
@@ -175,7 +175,7 @@ func (f *FieldScheduleRepository) UpdateStatus(
 	fieldSchedule.Status = status
 	err = f.db.WithContext(ctx).Save(&fieldSchedule).Error
 	if err != nil {
-		return errWrap.WrapError(errConstant.ErrSQLError)
+		return errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return nil
 }
@@ -183,7 +183,7 @@ func (f *FieldScheduleRepository) UpdateStatus(
 func (f *FieldScheduleRepository) Delete(ctx context.Context, uuid string) error {
 	err := f.db.WithContext(ctx).Where("uuid = ?", uuid).Delete(&models.FieldSchedule{}).Error
 	if err != nil {
-		return errWrap.WrapError(errConstant.ErrSQLError)
+		return errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return nil
 }

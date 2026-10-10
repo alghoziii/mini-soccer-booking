@@ -65,7 +65,7 @@ func (o *OrderRepository) FindAllWithPagination(
 		Count(&total).
 		Error
 	if err != nil {
-		return nil, 0, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, 0, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 
 	return orders, total, nil
@@ -80,9 +80,9 @@ func (o *OrderRepository) FindByUUID(ctx context.Context, uuid string) (*models.
 		Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errWrap.WrapError(errOrder.ErrOrderNotFound)
+			return nil, errWrap.WrapErrorWithContext(ctx, errOrder.ErrOrderNotFound)
 		}
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 
 	return &order, nil
@@ -97,9 +97,9 @@ func (o *OrderRepository) FindByUserID(ctx context.Context, userID string) ([]mo
 		Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errWrap.WrapError(errOrder.ErrOrderNotFound)
+			return nil, errWrap.WrapErrorWithContext(ctx, errOrder.ErrOrderNotFound)
 		}
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 
 	return orders, nil
@@ -155,7 +155,7 @@ func (o *OrderRepository) Create(
 		Create(order).
 		Error
 	if err != nil {
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return order, nil
 }
@@ -173,7 +173,7 @@ func (o *OrderRepository) Update(
 		Updates(request).
 		Error
 	if err != nil {
-		return errWrap.WrapError(errConstant.ErrSQLError)
+		return errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return nil
 }

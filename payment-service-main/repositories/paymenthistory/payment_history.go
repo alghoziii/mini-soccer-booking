@@ -36,7 +36,7 @@ func (p *PaymentHistoryRepository) Create(
 		Create(&paymentHistory).
 		Error
 	if err != nil {
-		return errWrap.WrapError(errConstant.ErrSQLError)
+		return errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return nil
 }

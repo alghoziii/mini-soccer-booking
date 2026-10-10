@@ -5,7 +5,7 @@ filebeat.autodiscover:
       templates:
         - condition:
             contains:
-              docker.container.name: "user-service"
+              docker.container.name: "-service"
           config:
             - type: container
               paths:

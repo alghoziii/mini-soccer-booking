@@ -40,7 +40,7 @@ func (r *UserRepository) Register(ctx context.Context, req *dto.RegisterRequest)
 
 	err := r.db.WithContext(ctx).Create(&user).Error
 	if err != nil {
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 
 	return &user, nil
@@ -49,7 +49,7 @@ func (r *UserRepository) Register(ctx context.Context, req *dto.RegisterRequest)
 func (r *UserRepository) Update(ctx context.Context, req *dto.UpdateRequest, uuidStr string) (*models.User, error) {
 	parsedUUID, err := uuid.Parse(uuidStr)
 	if err != nil {
-		return nil, errWrap.WrapError(err)
+		return nil, errWrap.WrapErrorWithContext(ctx, err)
 	}
 
 	user := models.User{
@@ -64,7 +64,7 @@ func (r *UserRepository) Update(ctx context.Context, req *dto.UpdateRequest, uui
 		Where("uuid = ?", uuidStr).
 		Updates(&user).Error
 	if err != nil {
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	user.UUID = parsedUUID
 	return &user, nil
@@ -80,7 +80,7 @@ func (r *UserRepository) FindByUsername(ctx context.Context, username string) (*
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errConstant.ErrUserNotFound
 		}
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return &user, nil
 }
@@ -95,7 +95,7 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*models
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errConstant.ErrUserNotFound
 		}
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return &user, nil
 }
@@ -110,7 +110,7 @@ func (r *UserRepository) FindByUUID(ctx context.Context, uuid string) (*models.U
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errConstant.ErrUserNotFound
 		}
-		return nil, errWrap.WrapError(errConstant.ErrSQLError)
+		return nil, errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 	return &user, nil
 }

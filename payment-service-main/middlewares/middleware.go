@@ -12,6 +12,9 @@ import (
 	"payment-service/constants"
 	errConstant "payment-service/constants/error"
 	"strings"
+	"time"
+	
+	"github.com/google/uuid"
 )
 
 func HandlePanic() gin.HandlerFunc {
@@ -97,5 +100,30 @@ func Authenticate() gin.HandlerFunc {
 		tokenUser := c.Request.WithContext(context.WithValue(c.Request.Context(), constants.Token, tokenString))
 		c.Request = tokenUser
 		c.Next()
+	}
+}
+
+func RequestLogger() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		start := time.Now()
+
+		reqID := c.GetHeader("X-Request-ID")
+		if reqID == "" {
+			reqID = uuid.New().String()
+		}
+		
+		ctx := context.WithValue(c.Request.Context(), "request_id", reqID)
+		c.Request = c.Request.WithContext(ctx)
+
+		c.Next()
+
+		latency := time.Since(start)
+		logrus.WithFields(logrus.Fields{
+			"request_id": reqID,
+			"method":  c.Request.Method,
+			"path":    c.Request.URL.Path,
+			"status":  c.Writer.Status(),
+			"latency": latency.String(),
+		}).Info("HTTP Request")
 	}
 }

@@ -1,9 +1,22 @@
 name: booking-order-app
 services:
   user-service:
+    build: .
     container_name: user-service
     image: sikoding20/user-service:17
     ports:
       - "8001:8001"
     env_file:
       - .env
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: user-postgres
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: user_db
+    ports:
+      - "5432:5432"

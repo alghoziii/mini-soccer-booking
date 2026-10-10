@@ -36,7 +36,7 @@ func (o *OrderHistoryRepository) Create(
 		Create(&orderHistory).
 		Error
 	if err != nil {
-		return errWrap.WrapError(errConstant.ErrSQLError)
+		return errWrap.WrapErrorWithContext(ctx, errConstant.ErrSQLError)
 	}
 
 	return nil

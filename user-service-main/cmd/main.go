@@ -53,7 +53,7 @@ var command = &cobra.Command{
 		service := services.NewServiceRegistry(repository)
 		controller := controllers.NewControllerRegistry(service)
 
-		router := gin.Default()
+		router := gin.New()
 		router.Use(middlewares.HandlePanic())
 		router.Use(middlewares.RequestLogger())
 		router.NoRoute(func(c *gin.Context) {
@@ -95,25 +95,11 @@ var command = &cobra.Command{
 	},
 }
 
-type RequestIDHook struct{}
 
-func (h *RequestIDHook) Levels() []logrus.Level {
-	return logrus.AllLevels
-}
-
-func (h *RequestIDHook) Fire(e *logrus.Entry) error {
-	if e.Context != nil {
-		if reqID, ok := e.Context.Value("request_id").(string); ok {
-			e.Data["request_id"] = reqID
-		}
-	}
-	return nil
-}
 
 func Run() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logrus.SetOutput(os.Stdout)
-	logrus.AddHook(&RequestIDHook{})
 
 	err := command.Execute()
 	if err != nil {

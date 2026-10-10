@@ -1,6 +1,7 @@
 package error
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/go-playground/validator/v10"
@@ -60,5 +61,13 @@ func ErrValidationResponse(err error) (validationResponse []ValidationResponse) 
 
 func WrapError(err error) error {
 	logrus.Errorf("error: %v", err)
+	return err
+}
+
+func WrapErrorWithContext(ctx context.Context, err error) error {
+	reqID, _ := ctx.Value("request_id").(string)
+	logrus.WithFields(logrus.Fields{
+		"request_id": reqID,
+	}).Errorf("error: %v", err)
 	return err
 }
